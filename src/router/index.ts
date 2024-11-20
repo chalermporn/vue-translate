@@ -1,23 +1,41 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+
+const routes = [
+  {
+    path: '/:lang(en|th)?', // Optional language segment
+    component: () => import('../layouts/MainLayout.vue'), // Main layout component
+    children: [
+      {
+        path: '', // Path relative to the language
+        name: 'HomeView',
+        component: () => import('../views/HomeView.vue'),
+      },
+      {
+        path: 'about', // Path relative to the language
+        name: 'AboutView',
+        component: () => import('../views/AboutView.vue'),
+      },
+    ],
+  },
+  {
+    path: '/:catchAll(.*)', // Redirect unknown paths
+    redirect: '/en',
+  },
+];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
-  ],
-})
+  history: createWebHistory(),
+  routes,
+});
 
-export default router
+// Ensure default language if none is provided
+router.beforeEach((to, _, next) => {
+  const lang = to.params.lang as string;
+  console.log("lang: ",lang);
+  if (!lang) {
+    return next({ path: `/en${to.path}` });
+  }
+  next();
+});
+
+export default router;
